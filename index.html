@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Vendor Management Tool — client-side demo" />
+  <title>Vendor Management Tool</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Top Navbar -->
+  <header id="topNav" class="navbar" role="banner">
+    <div class="nav-left">
+      <h1 id="appTitle">Vendor Management</h1>
+    </div>
+    <div class="nav-right">
+      <button id="generateReportBtn" class="btn">Generate Report</button>
+      <button id="exportCSVBtn" class="btn">Export CSV</button>
+      <label class="import-label btn">
+        Import CSV
+        <input id="importCSVInput" type="file" accept=".csv" hidden />
+      </label>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Left Sidebar -->
+    <aside id="leftSidebar" class="sidebar" role="navigation" aria-label="Main menu">
+      <nav>
+        <ul>
+          <li><a href="#dashboard">Dashboard</a></li>
+          <li><a href="#vendors">Vendors</a></li>
+          <li><a href="#reports">Reports</a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-actions">
+        <button id="compareBtn" class="btn" disabled>Compare Vendors</button>
+        <button id="clearDataBtn" class="btn destructive">Clear All</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="main" role="main">
+      <!-- Alerts / Notifications -->
+      <section id="alertsBox" aria-live="polite" class="alerts"></section>
+
+      <!-- Add Vendor Form -->
+      <section id="addVendorSection" class="panel">
+        <h2>Add Vendor</h2>
+        <form id="addVendorForm" autocomplete="off" novalidate>
+          <div class="form-row">
+            <label for="name">Name<span class="required">*</span></label>
+            <input id="name" name="name" type="text" required />
+          </div>
+          <div class="form-row">
+            <label for="category">Category<span class="required">*</span></label>
+            <input id="category" name="category" type="text" required />
+          </div>
+          <div class="form-row">
+            <label for="phone">Phone</label>
+            <input id="phone" name="phone" type="tel" inputmode="numeric" />
+          </div>
+          <div class="form-row">
+            <label for="email">Email<span class="required">*</span></label>
+            <input id="email" name="email" type="email" required />
+          </div>
+          <div class="form-row">
+            <label for="price">Price</label>
+            <input id="price" name="price" type="number" step="0.01" />
+          </div>
+          <div class="form-row">
+            <label for="rating">Rating (1-5)</label>
+            <input id="rating" name="rating" type="number" min="1" max="5" />
+          </div>
+          <div class="form-row">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+              <option value="active" selected>Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="blacklisted">Blacklisted</option>
+            </select>
+          </div>
+          <fieldset class="form-row inline">
+            <legend>Compliance</legend>
+            <label><input id="gst" name="gst" type="checkbox" /> GST</label>
+            <label><input id="license" name="license" type="checkbox" /> License</label>
+            <label><input id="agreement" name="agreement" type="checkbox" /> Agreement</label>
+          </fieldset>
+          <div class="form-row">
+            <label for="contractStart">Contract Start</label>
+            <input id="contractStart" name="contractStart" type="date" />
+          </div>
+          <div class="form-row">
+            <label for="contractEnd">Contract End</label>
+            <input id="contractEnd" name="contractEnd" type="date" />
+          </div>
+          <div class="form-row">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="2"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button id="addVendorBtn" type="submit" class="btn primary">Save Vendor</button>
+            <button id="resetFormBtn" type="reset" class="btn secondary">Reset</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Search / Filters -->
+      <section id="filtersPanel" class="panel">
+        <h2>Search & Filters</h2>
+        <div class="filters-grid">
+          <label>Search <input id="searchInput" type="search" placeholder="Search name or email" /></label>
+          <label>Category
+            <select id="filterCategory"><option value="">Any</option></select>
+          </label>
+          <label>Status
+            <select id="filterStatus">
+              <option value="">Any</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="blacklisted">Blacklisted</option>
+            </select>
+          </label>
+          <label>Rating
+            <select id="filterRating"><option value="">Any</option><option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="5">5</option></select>
+          </label>
+          <label>Price Min <input id="priceMin" type="number" /></label>
+          <label>Price Max <input id="priceMax" type="number" /></label>
+          <div class="filter-actions">
+            <button id="clearFiltersBtn" class="btn secondary">Clear Filters</button>
+          </div>
+        </div>
+        <div class="sort-row">
+          <label>Sort
+            <select id="sortBy">
+              <option value="">None</option>
+              <option value="priceAsc">Price ↑</option>
+              <option value="priceDesc">Price ↓</option>
+              <option value="ratingAsc">Rating ↑</option>
+              <option value="ratingDesc">Rating ↓</option>
+              <option value="scoreAsc">Score ↑</option>
+              <option value="scoreDesc">Score ↓</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- Vendor Table -->
+      <section id="vendorListSection" class="panel">
+        <h2>Vendors</h2>
+        <div class="table-actions">
+          <button id="bulkDeleteBtn" class="btn destructive" disabled>Delete Selected</button>
+        </div>
+        <table id="vendorTable" aria-describedby="vendorListSection">
+          <thead>
+            <tr>
+              <th><input id="selectAllCheckbox" type="checkbox" aria-label="Select all vendors" /></th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Price</th>
+              <th>Rating</th>
+              <th>Performance</th>
+              <th>Risk</th>
+              <th>Compliance</th>
+              <th>Contract End</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="vendorTableBody"></tbody>
+        </table>
+      </section>
+
+      <!-- Reports -->
+      <section id="reportSection" class="panel" aria-labelledby="generateReportBtn">
+        <h2>Report</h2>
+        <div id="reportContainer" class="report"></div>
+        <button id="exportReportCSVBtn" class="btn secondary" hidden>Export Report CSV</button>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="modals">
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="editModalTitle">
+      <div class="modal-content">
+        <button class="modal-close" data-modal-close>&times;</button>
+        <h3 id="editModalTitle">Edit Vendor</h3>
+        <form id="editVendorForm" novalidate>
+          <!-- fields mirror add form, prefixed with edit- -->
+          <input type="hidden" id="edit-id" />
+          <div class="form-row"><label for="edit-name">Name</label><input id="edit-name" /></div>
+          <div class="form-row"><label for="edit-category">Category</label><input id="edit-category" /></div>
+          <div class="form-row"><label for="edit-phone">Phone</label><input id="edit-phone" /></div>
+          <div class="form-row"><label for="edit-email">Email</label><input id="edit-email" type="email" /></div>
+          <div class="form-row"><label for="edit-price">Price</label><input id="edit-price" type="number" step="0.01" /></div>
+          <div class="form-row"><label for="edit-rating">Rating</label><input id="edit-rating" type="number" min="1" max="5" /></div>
+          <div class="form-row"><label for="edit-status">Status</label>
+            <select id="edit-status"><option value="active">Active</option><option value="inactive">Inactive</option><option value="blacklisted">Blacklisted</option></select>
+          </div>
+          <fieldset class="form-row inline">
+            <legend>Compliance</legend>
+            <label><input id="edit-gst" type="checkbox" /> GST</label>
+            <label><input id="edit-license" type="checkbox" /> License</label>
+            <label><input id="edit-agreement" type="checkbox" /> Agreement</label>
+          </fieldset>
+          <div class="form-row"><label for="edit-contractStart">Start</label><input id="edit-contractStart" type="date" /></div>
+          <div class="form-row"><label for="edit-contractEnd">End</label><input id="edit-contractEnd" type="date" /></div>
+          <div class="form-row"><label for="edit-notes">Notes</label><textarea id="edit-notes" rows="2"></textarea></div>
+          <div class="form-actions">
+            <button id="saveEditBtn" type="submit" class="btn primary">Save</button>
+            <button type="button" data-modal-close class="btn secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div id="confirmDeleteModal" class="modal" aria-hidden="true" role="dialog">
+      <div class="modal-content">
+        <h3>Confirm Delete</h3>
+        <p id="confirmDeleteText">Are you sure?</p>
+        <div class="form-actions">
+          <button id="confirmDeleteBtn" class="btn destructive">Confirm</button>
+          <button data-modal-close class="btn secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compare Modal -->
+    <div id="compareModal" class="modal" aria-hidden="true" role="dialog">
+      <div class="modal-content">
+        <button class="modal-close" data-modal-close>&times;</button>
+        <h3>Compare Vendors</h3>
+        <div id="compareContent" class="compare-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="vendorManager.js"></script>
+  <script src="csvUtils.js"></script>
+  <script src="reportGenerator.js"></script>
+  <script src="uiHandler.js"></script>
+</body>
+</html>

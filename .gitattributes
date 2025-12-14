@@ -1,0 +1,6 @@
+# Normalize text files and ensure consistent line endings
+* text=auto
+
+# Force JSON files to use LF in the repo
+package.json text eol=lf
+package-lock.json text eol=lf

@@ -1,0 +1,80 @@
+Vendor Management Tool - KFPROMPTS.txt
+
+Project Structure Context:
+- This Electron app stores vendors in localStorage via vendorManager.js and provides a UI via uiHandler.js.
+- Core files to reference: vendorManager.js, uiHandler.js, reportGenerator.js, csvUtils.js, index.html, package.json
+- The app supports CSV import/export, report generation, filtering, sorting, and basic validation.
+
+Prompts
+=======
+
+1) Implement background data persistence using SQLite instead of localStorage
+- Context: Replace localStorage in vendorManager.js with a small SQLite database to allow persistence across machines when packaged.
+- Requirements: Use a simple file-based SQLite (e.g., better-sqlite3 or sqlite3) and a small repository-level 'db' folder. Keep the existing vendor schema and field names. Implement upsert/delete/load functions with prepared statements. Maintain current computePerformanceScore and computeRiskLevel functions but ensure they operate on the DB rows. Ensure export/import CSV still works (csvUtils.js will read/write DB rows with vendorManager methods).
+- Constrain output: Provide code patches for vendorManager.js, a new db-wrapper.js file, and instructions to add sqlite dependency to package.json. Include minimal migration notes and a fallback to localStorage if DB unavailable.
+- Output: Implemented code with sample run steps and tests.
+
+2) Add automated unit tests for vendorManager.js using Jest
+- Context: Create Jest tests for computePerformanceScore, computeRiskLevel, checkContractExpiry, upsertVendor, and deleteVendorById.
+- Requirements: Create test stubs in a 'tests' folder; mock localStorage; use sample vendor fixtures; add test script to package.json; show test outputs.
+- Output: Provide tests file tests/vendorManager.test.js and package.json changes with jest config. Also provide setup instructions to run tests.
+
+3) Create an Electron build configuration to produce a Windows .exe using electron-builder
+- Context: Add scripts to package.json to create an installer/executable that will run without extra setup.
+- Requirements: Add build config with appId, productName, artifact config, and a build script for Windows (nsis or portable). Include electron-builder dependency and short steps for generating a 64-bit Windows .exe.
+- Output: A suggested package.json snippet, a short script to run packaging on Windows, and a recommended CI step.
+
+4) Improve CSV import validation and mapping
+- Context: csvUtils.parseCSVText imports vendor columns by header and merges; add stronger schema validation.
+- Requirements: Add validation for email syntax, phone length, numbers for price/rating, and allow mapping CSV header aliases (Price, Cost, UnitPrice) to price header using a mapping table. Provide user prompts to correct invalid rows and provide a detailed import summary with counts (imported/updated/skipped/errors).
+- Output: Updated csvUtils.importCSV code and UI message flows that show import summary (and a JSON object for testing)
+
+5) Add a sample dataset and automated 'seed' import for demo purposes
+- Context: Provide a CSV sample in electron/sample-data/vendors_sample.csv and a script to quickly seed the app for demo.
+- Requirements: Create a small sample CSV (10 vendors) with a range of values to demonstrate multiple categories, risk levels and contract states. Add a 'seed' script in package.json or a small Node script to import CSV into localStorage (or DB if added).
+- Output: vendors_sample.csv and seed script instructions.
+
+6) Add visual charts to the report using Chart.js
+- Context: reportGenerator.js currently creates textual reports. Add a new view that renders charts for category distribution, average scores per category, and high-risk vendor count.
+- Requirements: Embed Chart.js (client bundle) and create charts in reportGenerator.renderReport. Provide responsive layout and a 'Download Charts as PNG' button.
+- Output: Modified reportGenerator.js and index.html updates with the Chart.js script tag and CSS adjustments.
+
+7) Add a vendor status change history and audit log
+- Context: Track vendor status changes (activated, deactivated, blacklisted, etc.) with timestamps in vendorManager. Show history in the vendor edit modal.
+- Requirements: Add a history array to vendor objects or a separate audit log collection. Implement addStatusHistory(vendorId, oldStatus, newStatus, user?), and show it on edit modal.
+- Output: vendorManager changes, UI changes to include history in edit modal, and sample unit tests.
+
+8) Add a 'Compare More' feature with side-by-side metric normalization
+- Context: UI currently allows only two vendor comparisons; extend it to select up to 5 and normalize metrics (min-max) to a 0-100 scale for comparison.
+- Requirements: Update UI to allow selecting up to 5 vendors, add a modal with normalized charts/tables that show normalized score/rating/price, and provide a concise verdict (top-3 by performanceScore and lowest risk). Ensure accessibility with keyboard navigation.
+- Output: UI and JS changes for selection limit, comparison algorithm and output rendering.
+
+9) Enable secure file exports, logging and data privacy notes
+- Context: Prepare the app for packaging by ensuring no sensitive data is stored in logs and adding export data consent.
+- Requirements: Clear logs of CSV contents before writing; add a 'consent checkbox' before exporting/importing; ensure export file name sanitized; add export file encryption option (password-protected zip) optionally via a helper script.
+- Output: Minimal code changes to enforce consent, and example CLI tool to create password protected exports using 7zip (optional).
+
+10) Add accessibility and localization improvements
+- Context: Improve keyboard support, add ARIA attributes, ensure color contrast for badges, and export strings for i18n.
+- Requirements: Markup changes in index.html and JS to add aria-labels and roles; implement a simple locale switch mechanism with translations JSON file; update UI components to read localized strings.
+- Output: Files locales/en.json and locales/hi.json, index.html changes and brief steps to add more translations.
+
+Additional quick prompts for targeted tasks
+-----------------------------------------
+
+11) "Suggest UI improvements to better visualize vendor compliance and risk — propose component-level changes and CSS improvements along with small code snippets to implement badges and color legends."
+
+12) "Create a small Node script to export localStorage vendors to a JSON file when run in Electron's main process, and add a menu item to trigger it. Provide code for main.js changes and menu registration."
+
+13) "Write a Dev README section outlining how to add a new feature, run the app locally (dev mode), run tests, and build the .exe using electron-builder, include quick command examples."
+
+14) "Create a step-by-step debugging checklist for a CI pipeline that builds, tests, lints, and packages the electron app on Windows. Include checks for file artifacts and signing steps (optional)."
+
+15) "Suggest 5 test cases to validate csv import edge cases (e.g. quoted commas, missing headers, duplicate entries with different casing, partial booleans, price decimal formats)."
+
+Usage Guidance
+==============
+- When you run a prompt, include the file names and functions to modify (e.g., 'Edit vendorManager.upsertVendor') and the desired output format: a patch/diff, a test file, or step-by-step instructions.
+- If the assistant suggests a library (like sqlite3 or electron-builder), ask for sample package.json changes or a small migration script.
+
+End of prompts
